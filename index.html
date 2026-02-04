@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Word → E‑Sign → OCR PDF Portal</title>
+  <link rel="stylesheet" href="styles.css"/>
+
+  <!-- docx preview (renders DOCX to HTML in browser) -->
+  <script defer src="https://unpkg.com/docx-preview@0.1.20/dist/docx-preview.min.js"></script>
+  <!-- html2canvas (captures rendered HTML as image) -->
+  <script defer src="https://unpkg.com/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+  <!-- pdf-lib (build output PDF as images = OCR-style) -->
+  <script defer src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+
+  <script defer src="app.js"></script>
+</head>
+<body>
+  <header class="container">
+    <h1>Word → E‑Signature → OCR PDF</h1>
+    <p class="muted">
+      Upload a <b>DOCX letter</b> + signature image → place signature → generate an <b>image-only</b> PDF (OCR-style).
+      Works on GitHub Pages (no server).
+    </p>
+  </header>
+
+  <main class="container grid">
+    <section class="card">
+      <h2>1) Upload</h2>
+      <div class="row two">
+        <div>
+          <label class="label">Letter (DOCX)</label>
+          <input id="docxFile" class="file" type="file" accept=".docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document"/>
+        </div>
+        <div>
+          <label class="label">Signature image (PNG recommended)</label>
+          <input id="sigFile" class="file" type="file" accept="image/png,image/jpeg,image/webp"/>
+        </div>
+      </div>
+      <div class="status" id="statusInputs">No files loaded.</div>
+
+      <hr/>
+
+      <h2>2) Signature placement</h2>
+      <p class="muted small">Coordinates are percentages of the page. X from left, Y from bottom.</p>
+
+      <div class="row three">
+        <div>
+          <label class="label">X (% from left)</label>
+          <input id="posX" type="number" min="0" max="100" value="65"/>
+        </div>
+        <div>
+          <label class="label">Y (% from bottom)</label>
+          <input id="posY" type="number" min="0" max="100" value="18"/>
+        </div>
+        <div>
+          <label class="label">Width (% of page)</label>
+          <input id="sigW" type="number" min="1" max="100" value="22"/>
+        </div>
+      </div>
+
+      <div class="row two">
+        <div>
+          <label class="label">Apply signature to</label>
+          <select id="pageMode">
+            <option value="last">Last page only</option>
+            <option value="all">All pages</option>
+            <option value="range">Page range</option>
+          </select>
+        </div>
+        <div class="row two">
+          <div>
+            <label class="label">From (1-based)</label>
+            <input id="pageFrom" type="number" min="1" value="1" disabled/>
+          </div>
+          <div>
+            <label class="label">To (1-based)</label>
+            <input id="pageTo" type="number" min="1" value="1" disabled/>
+          </div>
+        </div>
+      </div>
+
+      <div class="row two">
+        <div>
+          <label class="label">Render quality</label>
+          <select id="scale">
+            <option value="2">Normal (2×)</option>
+            <option value="3">High (3×)</option>
+            <option value="4">Very High (4×)</option>
+          </select>
+        </div>
+        <div>
+          <label class="label">Output filename</label>
+          <input id="outName" type="text" value="SIGNED_OCR_LETTER"/>
+        </div>
+      </div>
+
+      <div class="row">
+        <button id="btnPreview" class="btn">Preview (renders page 1)</button>
+      </div>
+      <div class="status" id="statusPreview">No preview yet.</div>
+    </section>
+
+    <section class="card">
+      <h2>3) Generate OCR PDF</h2>
+      <p class="muted small">
+        Output is <b>image-only PDF</b>. Text is not selectable/copyable and editing is difficult.
+        If you need strict “print-only encryption”, see README for the optional desktop locking step.
+      </p>
+
+      <div class="row actions">
+        <button id="btnGenerate" class="btn success">Generate signed OCR PDF</button>
+        <button id="btnReset" class="btn danger">Reset</button>
+      </div>
+
+      <div class="status" id="statusGen">Ready.</div>
+    </section>
+
+    <section class="card span2">
+      <h2>Preview</h2>
+      <div class="previewWrap">
+        <canvas id="previewCanvas"></canvas>
+      </div>
+
+      <hr/>
+      <h3 class="subhead">Rendered DOCX (for conversion)</h3>
+      <p class="muted small">
+        This hidden renderer is what gets captured and sliced into pages. If your DOCX has complex layout, verify the preview matches.
+      </p>
+      <div id="docxHost" class="docxHost"></div>
+    </section>
+  </main>
+
+  <footer class="container muted small">
+    DOCX → HTML render → page-slice → image-only PDF • GitHub Pages ready
+  </footer>
+</body>
+</html>
